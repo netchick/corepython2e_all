@@ -1,358 +1,264 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-US">
-<head>
-<link rel="icon" href="/peps/static/hgicon.png" type="image/png" />
-<meta name="robots" content="index, nofollow" />
-<link rel="stylesheet" href="/peps/static/style-paper.css" type="text/css" />
-<script type="text/javascript" src="/peps/static/mercurial.js"></script>
+PEP: 263
+Title: Defining Python Source Code Encodings
+Version: $Revision$
+Last-Modified: $Date$
+Author: mal@lemburg.com (Marc-André Lemburg),
+  martin@v.loewis.de (Martin von Löwis)
+Status: Final
+Type: Standards Track
+Created: 06-Jun-2001
+Python-Version: 2.3
+Post-History: 
 
-<link rel="stylesheet" href="/peps/highlightcss" type="text/css" />
-<title>peps: 65c5d45eab5f pep-0263.txt</title>
-</head>
-<body>
+Abstract
 
-<div class="container">
-<div class="menu">
-<div class="logo">
-<a href="https://hg.python.org">
-<img src="/peps/static/hglogo.png" alt="back to hg.python.org repositories" /></a>
-</div>
-<ul>
-<li><a href="/peps/shortlog/tip">log</a></li>
-<li><a href="/peps/graph/tip">graph</a></li>
-<li><a href="/peps/tags">tags</a></li>
-<li><a href="/peps/bookmarks">bookmarks</a></li>
-<li><a href="/peps/branches">branches</a></li>
-</ul>
-<ul>
-<li><a href="/peps/rev/tip">changeset</a></li>
-<li><a href="/peps/file/tip/">browse</a></li>
-</ul>
-<ul>
-<li class="active">file</li>
-<li><a href="/peps/file/tip/pep-0263.txt">latest</a></li>
-<li><a href="/peps/diff/tip/pep-0263.txt">diff</a></li>
-<li><a href="/peps/comparison/tip/pep-0263.txt">comparison</a></li>
-<li><a href="/peps/annotate/tip/pep-0263.txt">annotate</a></li>
-<li><a href="/peps/log/tip/pep-0263.txt">file log</a></li>
-<li><a href="/peps/raw-file/tip/pep-0263.txt">raw</a></li>
-</ul>
-<ul>
-<li><a href="/peps/help">help</a></li>
-</ul>
-</div>
+    This PEP proposes to introduce a syntax to declare the encoding of
+    a Python source file. The encoding information is then used by the
+    Python parser to interpret the file using the given encoding. Most
+    notably this enhances the interpretation of Unicode literals in
+    the source code and makes it possible to write Unicode literals
+    using e.g. UTF-8 directly in an Unicode aware editor.
 
-<div class="main">
-<h2 class="breadcrumb"><a href="/">Mercurial</a> &gt; <a href="/peps">peps</a> </h2>
-<h3>
- view pep-0263.txt @ 6381:<a href="/peps/rev/65c5d45eab5f">65c5d45eab5f</a>
- <span class="tag">tip</span> 
-</h3>
+Problem
 
-<form class="search" action="/peps/log">
+    In Python 2.1, Unicode literals can only be written using the
+    Latin-1 based encoding "unicode-escape". This makes the
+    programming environment rather unfriendly to Python users who live
+    and work in non-Latin-1 locales such as many of the Asian 
+    countries. Programmers can write their 8-bit strings using the
+    favorite encoding, but are bound to the "unicode-escape" encoding
+    for Unicode literals.
 
-<p><input name="rev" id="search1" type="text" size="30" /></p>
-<div id="hint">Find changesets by keywords (author, files, the commit message), revision
-number or hash, or <a href="/peps/help/revsets">revset expression</a>.</div>
-</form>
+Proposed Solution
 
-<div class="description">Add a note to README that this repo is now migrated to Git and will remain frozen.</div>
+    I propose to make the Python source code encoding both visible and
+    changeable on a per-source file basis by using a special comment
+    at the top of the file to declare the encoding.
 
-<table id="changesetEntry">
-<tr>
- <th class="author">author</th>
- <td class="author">&#71;&#101;&#111;&#114;&#103;&#32;&#66;&#114;&#97;&#110;&#100;&#108;&#32;&#60;&#103;&#101;&#111;&#114;&#103;&#64;&#112;&#121;&#116;&#104;&#111;&#110;&#46;&#111;&#114;&#103;&#62;</td>
-</tr>
-<tr>
- <th class="date">date</th>
- <td class="date age">Thu, 16 Jun 2016 21:59:12 +0200</td>
-</tr>
-<tr>
- <th class="author">parents</th>
- <td class="author"><a href="/peps/file/270b464879a6/pep-0263.txt">270b464879a6</a> </td>
-</tr>
-<tr>
- <th class="author">children</th>
- <td class="author"></td>
-</tr>
-</table>
+    To make Python aware of this encoding declaration a number of
+    concept changes are necessary with respect to the handling of
+    Python source code data.
 
-<div class="overflow">
-<div class="sourcefirst linewraptoggle">line wrap: <a class="linewraplink" href="javascript:toggleLinewrap()">on</a></div>
-<div class="sourcefirst"> line source</div>
-<pre class="sourcelines stripes4 wrap">
-<span id="l1">PEP: 263</span><a href="#l1"></a>
-<span id="l2">Title: Defining Python Source Code Encodings</span><a href="#l2"></a>
-<span id="l3">Version: $Revision$</span><a href="#l3"></a>
-<span id="l4">Last-Modified: $Date$</span><a href="#l4"></a>
-<span id="l5">Author: mal@lemburg.com (Marc-André Lemburg),</span><a href="#l5"></a>
-<span id="l6">  martin@v.loewis.de (Martin von Löwis)</span><a href="#l6"></a>
-<span id="l7">Status: Final</span><a href="#l7"></a>
-<span id="l8">Type: Standards Track</span><a href="#l8"></a>
-<span id="l9">Created: 06-Jun-2001</span><a href="#l9"></a>
-<span id="l10">Python-Version: 2.3</span><a href="#l10"></a>
-<span id="l11">Post-History: </span><a href="#l11"></a>
-<span id="l12"></span><a href="#l12"></a>
-<span id="l13">Abstract</span><a href="#l13"></a>
-<span id="l14"></span><a href="#l14"></a>
-<span id="l15">    This PEP proposes to introduce a syntax to declare the encoding of</span><a href="#l15"></a>
-<span id="l16">    a Python source file. The encoding information is then used by the</span><a href="#l16"></a>
-<span id="l17">    Python parser to interpret the file using the given encoding. Most</span><a href="#l17"></a>
-<span id="l18">    notably this enhances the interpretation of Unicode literals in</span><a href="#l18"></a>
-<span id="l19">    the source code and makes it possible to write Unicode literals</span><a href="#l19"></a>
-<span id="l20">    using e.g. UTF-8 directly in an Unicode aware editor.</span><a href="#l20"></a>
-<span id="l21"></span><a href="#l21"></a>
-<span id="l22">Problem</span><a href="#l22"></a>
-<span id="l23"></span><a href="#l23"></a>
-<span id="l24">    In Python 2.1, Unicode literals can only be written using the</span><a href="#l24"></a>
-<span id="l25">    Latin-1 based encoding &quot;unicode-escape&quot;. This makes the</span><a href="#l25"></a>
-<span id="l26">    programming environment rather unfriendly to Python users who live</span><a href="#l26"></a>
-<span id="l27">    and work in non-Latin-1 locales such as many of the Asian </span><a href="#l27"></a>
-<span id="l28">    countries. Programmers can write their 8-bit strings using the</span><a href="#l28"></a>
-<span id="l29">    favorite encoding, but are bound to the &quot;unicode-escape&quot; encoding</span><a href="#l29"></a>
-<span id="l30">    for Unicode literals.</span><a href="#l30"></a>
-<span id="l31"></span><a href="#l31"></a>
-<span id="l32">Proposed Solution</span><a href="#l32"></a>
-<span id="l33"></span><a href="#l33"></a>
-<span id="l34">    I propose to make the Python source code encoding both visible and</span><a href="#l34"></a>
-<span id="l35">    changeable on a per-source file basis by using a special comment</span><a href="#l35"></a>
-<span id="l36">    at the top of the file to declare the encoding.</span><a href="#l36"></a>
-<span id="l37"></span><a href="#l37"></a>
-<span id="l38">    To make Python aware of this encoding declaration a number of</span><a href="#l38"></a>
-<span id="l39">    concept changes are necessary with respect to the handling of</span><a href="#l39"></a>
-<span id="l40">    Python source code data.</span><a href="#l40"></a>
-<span id="l41"></span><a href="#l41"></a>
-<span id="l42">Defining the Encoding</span><a href="#l42"></a>
-<span id="l43"></span><a href="#l43"></a>
-<span id="l44">    Python will default to ASCII as standard encoding if no other</span><a href="#l44"></a>
-<span id="l45">    encoding hints are given.</span><a href="#l45"></a>
-<span id="l46"></span><a href="#l46"></a>
-<span id="l47">    To define a source code encoding, a magic comment must</span><a href="#l47"></a>
-<span id="l48">    be placed into the source files either as first or second</span><a href="#l48"></a>
-<span id="l49">    line in the file, such as:</span><a href="#l49"></a>
-<span id="l50"></span><a href="#l50"></a>
-<span id="l51">          # coding=&lt;encoding name&gt;</span><a href="#l51"></a>
-<span id="l52"></span><a href="#l52"></a>
-<span id="l53">    or (using formats recognized by popular editors)</span><a href="#l53"></a>
-<span id="l54"></span><a href="#l54"></a>
-<span id="l55">          #!/usr/bin/python</span><a href="#l55"></a>
-<span id="l56">          # -*- coding: &lt;encoding name&gt; -*-</span><a href="#l56"></a>
-<span id="l57"></span><a href="#l57"></a>
-<span id="l58">    or</span><a href="#l58"></a>
-<span id="l59"></span><a href="#l59"></a>
-<span id="l60">          #!/usr/bin/python</span><a href="#l60"></a>
-<span id="l61">          # vim: set fileencoding=&lt;encoding name&gt; :</span><a href="#l61"></a>
-<span id="l62"></span><a href="#l62"></a>
-<span id="l63">    More precisely, the first or second line must match the regular</span><a href="#l63"></a>
-<span id="l64">    expression &quot;^[ \t\v]*#.*?coding[:=][ \t]*([-_.a-zA-Z0-9]+)&quot;.</span><a href="#l64"></a>
-<span id="l65">    The first group of this</span><a href="#l65"></a>
-<span id="l66">    expression is then interpreted as encoding name. If the encoding</span><a href="#l66"></a>
-<span id="l67">    is unknown to Python, an error is raised during compilation. There</span><a href="#l67"></a>
-<span id="l68">    must not be any Python statement on the line that contains the</span><a href="#l68"></a>
-<span id="l69">    encoding declaration.  If the first line matches the second line</span><a href="#l69"></a>
-<span id="l70">    is ignored.</span><a href="#l70"></a>
-<span id="l71"></span><a href="#l71"></a>
-<span id="l72">    To aid with platforms such as Windows, which add Unicode BOM marks</span><a href="#l72"></a>
-<span id="l73">    to the beginning of Unicode files, the UTF-8 signature</span><a href="#l73"></a>
-<span id="l74">    &#39;\xef\xbb\xbf&#39; will be interpreted as &#39;utf-8&#39; encoding as well</span><a href="#l74"></a>
-<span id="l75">    (even if no magic encoding comment is given).</span><a href="#l75"></a>
-<span id="l76"></span><a href="#l76"></a>
-<span id="l77">    If a source file uses both the UTF-8 BOM mark signature and a</span><a href="#l77"></a>
-<span id="l78">    magic encoding comment, the only allowed encoding for the comment</span><a href="#l78"></a>
-<span id="l79">    is &#39;utf-8&#39;.  Any other encoding will cause an error.</span><a href="#l79"></a>
-<span id="l80"></span><a href="#l80"></a>
-<span id="l81">Examples</span><a href="#l81"></a>
-<span id="l82"></span><a href="#l82"></a>
-<span id="l83">    These are some examples to clarify the different styles for</span><a href="#l83"></a>
-<span id="l84">    defining the source code encoding at the top of a Python source</span><a href="#l84"></a>
-<span id="l85">    file:</span><a href="#l85"></a>
-<span id="l86"></span><a href="#l86"></a>
-<span id="l87">    1. With interpreter binary and using Emacs style file encoding</span><a href="#l87"></a>
-<span id="l88">       comment:</span><a href="#l88"></a>
-<span id="l89"></span><a href="#l89"></a>
-<span id="l90">          #!/usr/bin/python</span><a href="#l90"></a>
-<span id="l91">          # -*- coding: latin-1 -*-</span><a href="#l91"></a>
-<span id="l92">          import os, sys</span><a href="#l92"></a>
-<span id="l93">          ...</span><a href="#l93"></a>
-<span id="l94"></span><a href="#l94"></a>
-<span id="l95">          #!/usr/bin/python</span><a href="#l95"></a>
-<span id="l96">          # -*- coding: iso-8859-15 -*-</span><a href="#l96"></a>
-<span id="l97">          import os, sys</span><a href="#l97"></a>
-<span id="l98">          ...</span><a href="#l98"></a>
-<span id="l99"></span><a href="#l99"></a>
-<span id="l100">          #!/usr/bin/python</span><a href="#l100"></a>
-<span id="l101">          # -*- coding: ascii -*-</span><a href="#l101"></a>
-<span id="l102">          import os, sys</span><a href="#l102"></a>
-<span id="l103">          ...</span><a href="#l103"></a>
-<span id="l104"></span><a href="#l104"></a>
-<span id="l105">    2. Without interpreter line, using plain text:</span><a href="#l105"></a>
-<span id="l106"></span><a href="#l106"></a>
-<span id="l107">          # This Python file uses the following encoding: utf-8</span><a href="#l107"></a>
-<span id="l108">          import os, sys</span><a href="#l108"></a>
-<span id="l109">          ...</span><a href="#l109"></a>
-<span id="l110"></span><a href="#l110"></a>
-<span id="l111">    3. Text editors might have different ways of defining the file&#39;s</span><a href="#l111"></a>
-<span id="l112">       encoding, e.g.</span><a href="#l112"></a>
-<span id="l113"></span><a href="#l113"></a>
-<span id="l114">          #!/usr/local/bin/python</span><a href="#l114"></a>
-<span id="l115">          # coding: latin-1</span><a href="#l115"></a>
-<span id="l116">          import os, sys</span><a href="#l116"></a>
-<span id="l117">          ...</span><a href="#l117"></a>
-<span id="l118"></span><a href="#l118"></a>
-<span id="l119">    4. Without encoding comment, Python&#39;s parser will assume ASCII</span><a href="#l119"></a>
-<span id="l120">       text:</span><a href="#l120"></a>
-<span id="l121"></span><a href="#l121"></a>
-<span id="l122">          #!/usr/local/bin/python</span><a href="#l122"></a>
-<span id="l123">          import os, sys</span><a href="#l123"></a>
-<span id="l124">          ...</span><a href="#l124"></a>
-<span id="l125"></span><a href="#l125"></a>
-<span id="l126">    5. Encoding comments which don&#39;t work:</span><a href="#l126"></a>
-<span id="l127"></span><a href="#l127"></a>
-<span id="l128">       Missing &quot;coding:&quot; prefix:</span><a href="#l128"></a>
-<span id="l129"></span><a href="#l129"></a>
-<span id="l130">          #!/usr/local/bin/python</span><a href="#l130"></a>
-<span id="l131">          # latin-1</span><a href="#l131"></a>
-<span id="l132">          import os, sys</span><a href="#l132"></a>
-<span id="l133">          ...</span><a href="#l133"></a>
-<span id="l134"></span><a href="#l134"></a>
-<span id="l135">       Encoding comment not on line 1 or 2:</span><a href="#l135"></a>
-<span id="l136"></span><a href="#l136"></a>
-<span id="l137">          #!/usr/local/bin/python</span><a href="#l137"></a>
-<span id="l138">          #</span><a href="#l138"></a>
-<span id="l139">          # -*- coding: latin-1 -*-</span><a href="#l139"></a>
-<span id="l140">          import os, sys</span><a href="#l140"></a>
-<span id="l141">          ...</span><a href="#l141"></a>
-<span id="l142"></span><a href="#l142"></a>
-<span id="l143">       Unsupported encoding:</span><a href="#l143"></a>
-<span id="l144"></span><a href="#l144"></a>
-<span id="l145">          #!/usr/local/bin/python</span><a href="#l145"></a>
-<span id="l146">          # -*- coding: utf-42 -*-</span><a href="#l146"></a>
-<span id="l147">          import os, sys</span><a href="#l147"></a>
-<span id="l148">          ...</span><a href="#l148"></a>
-<span id="l149"></span><a href="#l149"></a>
-<span id="l150">Concepts</span><a href="#l150"></a>
-<span id="l151"></span><a href="#l151"></a>
-<span id="l152">    The PEP is based on the following concepts which would have to be</span><a href="#l152"></a>
-<span id="l153">    implemented to enable usage of such a magic comment:</span><a href="#l153"></a>
-<span id="l154"></span><a href="#l154"></a>
-<span id="l155">    1. The complete Python source file should use a single encoding.</span><a href="#l155"></a>
-<span id="l156">       Embedding of differently encoded data is not allowed and will</span><a href="#l156"></a>
-<span id="l157">       result in a decoding error during compilation of the Python</span><a href="#l157"></a>
-<span id="l158">       source code.</span><a href="#l158"></a>
-<span id="l159"></span><a href="#l159"></a>
-<span id="l160">       Any encoding which allows processing the first two lines in the</span><a href="#l160"></a>
-<span id="l161">       way indicated above is allowed as source code encoding, this</span><a href="#l161"></a>
-<span id="l162">       includes ASCII compatible encodings as well as certain</span><a href="#l162"></a>
-<span id="l163">       multi-byte encodings such as Shift_JIS. It does not include</span><a href="#l163"></a>
-<span id="l164">       encodings which use two or more bytes for all characters like</span><a href="#l164"></a>
-<span id="l165">       e.g. UTF-16. The reason for this is to keep the encoding</span><a href="#l165"></a>
-<span id="l166">       detection algorithm in the tokenizer simple.</span><a href="#l166"></a>
-<span id="l167"></span><a href="#l167"></a>
-<span id="l168">    2. Handling of escape sequences should continue to work as it does </span><a href="#l168"></a>
-<span id="l169">       now, but with all possible source code encodings, that is</span><a href="#l169"></a>
-<span id="l170">       standard string literals (both 8-bit and Unicode) are subject to </span><a href="#l170"></a>
-<span id="l171">       escape sequence expansion while raw string literals only expand</span><a href="#l171"></a>
-<span id="l172">       a very small subset of escape sequences.</span><a href="#l172"></a>
-<span id="l173"></span><a href="#l173"></a>
-<span id="l174">    3. Python&#39;s tokenizer/compiler combo will need to be updated to</span><a href="#l174"></a>
-<span id="l175">       work as follows:</span><a href="#l175"></a>
-<span id="l176"></span><a href="#l176"></a>
-<span id="l177">       1. read the file</span><a href="#l177"></a>
-<span id="l178"></span><a href="#l178"></a>
-<span id="l179">       2. decode it into Unicode assuming a fixed per-file encoding</span><a href="#l179"></a>
-<span id="l180"></span><a href="#l180"></a>
-<span id="l181">       3. convert it into a UTF-8 byte string</span><a href="#l181"></a>
-<span id="l182"></span><a href="#l182"></a>
-<span id="l183">       4. tokenize the UTF-8 content</span><a href="#l183"></a>
-<span id="l184"></span><a href="#l184"></a>
-<span id="l185">       5. compile it, creating Unicode objects from the given Unicode data</span><a href="#l185"></a>
-<span id="l186">          and creating string objects from the Unicode literal data</span><a href="#l186"></a>
-<span id="l187">          by first reencoding the UTF-8 data into 8-bit string data</span><a href="#l187"></a>
-<span id="l188">          using the given file encoding</span><a href="#l188"></a>
-<span id="l189"></span><a href="#l189"></a>
-<span id="l190">       Note that Python identifiers are restricted to the ASCII</span><a href="#l190"></a>
-<span id="l191">       subset of the encoding, and thus need no further conversion</span><a href="#l191"></a>
-<span id="l192">       after step 4.</span><a href="#l192"></a>
-<span id="l193"></span><a href="#l193"></a>
-<span id="l194">Implementation</span><a href="#l194"></a>
-<span id="l195"></span><a href="#l195"></a>
-<span id="l196">    For backwards-compatibility with existing code which currently</span><a href="#l196"></a>
-<span id="l197">    uses non-ASCII in string literals without declaring an encoding,</span><a href="#l197"></a>
-<span id="l198">    the implementation will be introduced in two phases:</span><a href="#l198"></a>
-<span id="l199"></span><a href="#l199"></a>
-<span id="l200">    1. Allow non-ASCII in string literals and comments, by internally</span><a href="#l200"></a>
-<span id="l201">       treating a missing encoding declaration as a declaration of</span><a href="#l201"></a>
-<span id="l202">       &quot;iso-8859-1&quot;. This will cause arbitrary byte strings to</span><a href="#l202"></a>
-<span id="l203">       correctly round-trip between step 2 and step 5 of the</span><a href="#l203"></a>
-<span id="l204">       processing, and provide compatibility with Python 2.2 for</span><a href="#l204"></a>
-<span id="l205">       Unicode literals that contain non-ASCII bytes.</span><a href="#l205"></a>
-<span id="l206"></span><a href="#l206"></a>
-<span id="l207">       A warning will be issued if non-ASCII bytes are found in the</span><a href="#l207"></a>
-<span id="l208">       input, once per improperly encoded input file.</span><a href="#l208"></a>
-<span id="l209"></span><a href="#l209"></a>
-<span id="l210">    2. Remove the warning, and change the default encoding to &quot;ascii&quot;.</span><a href="#l210"></a>
-<span id="l211"></span><a href="#l211"></a>
-<span id="l212">    The builtin compile() API will be enhanced to accept Unicode as</span><a href="#l212"></a>
-<span id="l213">    input. 8-bit string input is subject to the standard procedure for</span><a href="#l213"></a>
-<span id="l214">    encoding detection as described above.</span><a href="#l214"></a>
-<span id="l215"></span><a href="#l215"></a>
-<span id="l216">    If a Unicode string with a coding declaration is passed to compile(),</span><a href="#l216"></a>
-<span id="l217">    a SyntaxError will be raised.</span><a href="#l217"></a>
-<span id="l218"></span><a href="#l218"></a>
-<span id="l219">    SUZUKI Hisao is working on a patch; see [2] for details. A patch</span><a href="#l219"></a>
-<span id="l220">    implementing only phase 1 is available at [1].</span><a href="#l220"></a>
-<span id="l221"></span><a href="#l221"></a>
-<span id="l222">Phases</span><a href="#l222"></a>
-<span id="l223">    Implementation of steps 1 and 2 above were completed in 2.3,</span><a href="#l223"></a>
-<span id="l224">    except for changing the default encoding to &quot;ascii&quot;.</span><a href="#l224"></a>
-<span id="l225"></span><a href="#l225"></a>
-<span id="l226">    The default encoding was set to &quot;ascii&quot; in version 2.5.</span><a href="#l226"></a>
-<span id="l227">   </span><a href="#l227"></a>
-<span id="l228">Scope</span><a href="#l228"></a>
-<span id="l229"></span><a href="#l229"></a>
-<span id="l230">    This PEP intends to provide an upgrade path from the current</span><a href="#l230"></a>
-<span id="l231">    (more-or-less) undefined source code encoding situation to a more</span><a href="#l231"></a>
-<span id="l232">    robust and portable definition.</span><a href="#l232"></a>
-<span id="l233"></span><a href="#l233"></a>
-<span id="l234">References</span><a href="#l234"></a>
-<span id="l235"></span><a href="#l235"></a>
-<span id="l236">    [1] Phase 1 implementation:</span><a href="#l236"></a>
-<span id="l237">        http://python.org/sf/526840</span><a href="#l237"></a>
-<span id="l238">    [2] Phase 2 implementation:</span><a href="#l238"></a>
-<span id="l239">        http://python.org/sf/534304</span><a href="#l239"></a>
-<span id="l240"></span><a href="#l240"></a>
-<span id="l241">History</span><a href="#l241"></a>
-<span id="l242"></span><a href="#l242"></a>
-<span id="l243">    1.10 and above: see CVS history</span><a href="#l243"></a>
-<span id="l244">    1.8: Added &#39;.&#39; to the coding RE.</span><a href="#l244"></a>
-<span id="l245">    1.7: Added warnings to phase 1 implementation. Replaced the</span><a href="#l245"></a>
-<span id="l246">         Latin-1 default encoding with the interpreter&#39;s default</span><a href="#l246"></a>
-<span id="l247">         encoding. Added tweaks to compile().</span><a href="#l247"></a>
-<span id="l248">    1.4 - 1.6: Minor tweaks</span><a href="#l248"></a>
-<span id="l249">    1.3: Worked in comments by Martin v. Loewis: </span><a href="#l249"></a>
-<span id="l250">         UTF-8 BOM mark detection, Emacs style magic comment,</span><a href="#l250"></a>
-<span id="l251">         two phase approach to the implementation</span><a href="#l251"></a>
-<span id="l252"></span><a href="#l252"></a>
-<span id="l253">Copyright</span><a href="#l253"></a>
-<span id="l254"></span><a href="#l254"></a>
-<span id="l255">    This document has been placed in the public domain.</span><a href="#l255"></a>
-<span id="l256"></span><a href="#l256"></a>
-<span id="l257"></span><a href="#l257"></a>
-<span id="l258">Local Variables:</span><a href="#l258"></a>
-<span id="l259">mode: indented-text</span><a href="#l259"></a>
-<span id="l260">indent-tabs-mode: nil</span><a href="#l260"></a>
-<span id="l261">sentence-end-double-space: t</span><a href="#l261"></a>
-<span id="l262">fill-column: 70</span><a href="#l262"></a>
-<span id="l263">coding: utf-8</span><a href="#l263"></a>
-<span id="l264">End:</span><a href="#l264"></a></pre>
-<div class="sourcelast"></div>
-</div>
-</div>
-</div>
+Defining the Encoding
 
-<script type="text/javascript">process_dates()</script>
+    Python will default to ASCII as standard encoding if no other
+    encoding hints are given.
+
+    To define a source code encoding, a magic comment must
+    be placed into the source files either as first or second
+    line in the file, such as:
+
+          # coding=<encoding name>
+
+    or (using formats recognized by popular editors)
+
+          #!/usr/bin/python
+          # -*- coding: <encoding name> -*-
+
+    or
+
+          #!/usr/bin/python
+          # vim: set fileencoding=<encoding name> :
+
+    More precisely, the first or second line must match the regular
+    expression "^[ \t\v]*#.*?coding[:=][ \t]*([-_.a-zA-Z0-9]+)".
+    The first group of this
+    expression is then interpreted as encoding name. If the encoding
+    is unknown to Python, an error is raised during compilation. There
+    must not be any Python statement on the line that contains the
+    encoding declaration.  If the first line matches the second line
+    is ignored.
+
+    To aid with platforms such as Windows, which add Unicode BOM marks
+    to the beginning of Unicode files, the UTF-8 signature
+    '\xef\xbb\xbf' will be interpreted as 'utf-8' encoding as well
+    (even if no magic encoding comment is given).
+
+    If a source file uses both the UTF-8 BOM mark signature and a
+    magic encoding comment, the only allowed encoding for the comment
+    is 'utf-8'.  Any other encoding will cause an error.
+
+Examples
+
+    These are some examples to clarify the different styles for
+    defining the source code encoding at the top of a Python source
+    file:
+
+    1. With interpreter binary and using Emacs style file encoding
+       comment:
+
+          #!/usr/bin/python
+          # -*- coding: latin-1 -*-
+          import os, sys
+          ...
+
+          #!/usr/bin/python
+          # -*- coding: iso-8859-15 -*-
+          import os, sys
+          ...
+
+          #!/usr/bin/python
+          # -*- coding: ascii -*-
+          import os, sys
+          ...
+
+    2. Without interpreter line, using plain text:
+
+          # This Python file uses the following encoding: utf-8
+          import os, sys
+          ...
+
+    3. Text editors might have different ways of defining the file's
+       encoding, e.g.
+
+          #!/usr/local/bin/python
+          # coding: latin-1
+          import os, sys
+          ...
+
+    4. Without encoding comment, Python's parser will assume ASCII
+       text:
+
+          #!/usr/local/bin/python
+          import os, sys
+          ...
+
+    5. Encoding comments which don't work:
+
+       Missing "coding:" prefix:
+
+          #!/usr/local/bin/python
+          # latin-1
+          import os, sys
+          ...
+
+       Encoding comment not on line 1 or 2:
+
+          #!/usr/local/bin/python
+          #
+          # -*- coding: latin-1 -*-
+          import os, sys
+          ...
+
+       Unsupported encoding:
+
+          #!/usr/local/bin/python
+          # -*- coding: utf-42 -*-
+          import os, sys
+          ...
+
+Concepts
+
+    The PEP is based on the following concepts which would have to be
+    implemented to enable usage of such a magic comment:
+
+    1. The complete Python source file should use a single encoding.
+       Embedding of differently encoded data is not allowed and will
+       result in a decoding error during compilation of the Python
+       source code.
+
+       Any encoding which allows processing the first two lines in the
+       way indicated above is allowed as source code encoding, this
+       includes ASCII compatible encodings as well as certain
+       multi-byte encodings such as Shift_JIS. It does not include
+       encodings which use two or more bytes for all characters like
+       e.g. UTF-16. The reason for this is to keep the encoding
+       detection algorithm in the tokenizer simple.
+
+    2. Handling of escape sequences should continue to work as it does 
+       now, but with all possible source code encodings, that is
+       standard string literals (both 8-bit and Unicode) are subject to 
+       escape sequence expansion while raw string literals only expand
+       a very small subset of escape sequences.
+
+    3. Python's tokenizer/compiler combo will need to be updated to
+       work as follows:
+
+       1. read the file
+
+       2. decode it into Unicode assuming a fixed per-file encoding
+
+       3. convert it into a UTF-8 byte string
+
+       4. tokenize the UTF-8 content
+
+       5. compile it, creating Unicode objects from the given Unicode data
+          and creating string objects from the Unicode literal data
+          by first reencoding the UTF-8 data into 8-bit string data
+          using the given file encoding
+
+       Note that Python identifiers are restricted to the ASCII
+       subset of the encoding, and thus need no further conversion
+       after step 4.
+
+Implementation
+
+    For backwards-compatibility with existing code which currently
+    uses non-ASCII in string literals without declaring an encoding,
+    the implementation will be introduced in two phases:
+
+    1. Allow non-ASCII in string literals and comments, by internally
+       treating a missing encoding declaration as a declaration of
+       "iso-8859-1". This will cause arbitrary byte strings to
+       correctly round-trip between step 2 and step 5 of the
+       processing, and provide compatibility with Python 2.2 for
+       Unicode literals that contain non-ASCII bytes.
+
+       A warning will be issued if non-ASCII bytes are found in the
+       input, once per improperly encoded input file.
+
+    2. Remove the warning, and change the default encoding to "ascii".
+
+    The builtin compile() API will be enhanced to accept Unicode as
+    input. 8-bit string input is subject to the standard procedure for
+    encoding detection as described above.
+
+    If a Unicode string with a coding declaration is passed to compile(),
+    a SyntaxError will be raised.
+
+    SUZUKI Hisao is working on a patch; see [2] for details. A patch
+    implementing only phase 1 is available at [1].
+
+Phases
+    Implementation of steps 1 and 2 above were completed in 2.3,
+    except for changing the default encoding to "ascii".
+
+    The default encoding was set to "ascii" in version 2.5.
+   
+Scope
+
+    This PEP intends to provide an upgrade path from the current
+    (more-or-less) undefined source code encoding situation to a more
+    robust and portable definition.
+
+References
+
+    [1] Phase 1 implementation:
+        http://python.org/sf/526840
+    [2] Phase 2 implementation:
+        http://python.org/sf/534304
+
+History
+
+    1.10 and above: see CVS history
+    1.8: Added '.' to the coding RE.
+    1.7: Added warnings to phase 1 implementation. Replaced the
+         Latin-1 default encoding with the interpreter's default
+         encoding. Added tweaks to compile().
+    1.4 - 1.6: Minor tweaks
+    1.3: Worked in comments by Martin v. Loewis: 
+         UTF-8 BOM mark detection, Emacs style magic comment,
+         two phase approach to the implementation
+
+Copyright
+
+    This document has been placed in the public domain.
 
 
-</body>
-</html>
-
+Local Variables:
+mode: indented-text
+indent-tabs-mode: nil
+sentence-end-double-space: t
+fill-column: 70
+coding: utf-8
+End:
