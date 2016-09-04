@@ -1,4 +1,4 @@
-PEP: 263
+##PEP: 263
 Title: Defining Python Source Code Encodings
 Version: $Revision$
 Last-Modified: $Date$
@@ -10,7 +10,7 @@ Created: 06-Jun-2001
 Python-Version: 2.3
 Post-History: 
 
-Abstract
+#Abstract
 
     This PEP proposes to introduce a syntax to declare the encoding of
     a Python source file. The encoding information is then used by the
@@ -19,7 +19,7 @@ Abstract
     the source code and makes it possible to write Unicode literals
     using e.g. UTF-8 directly in an Unicode aware editor.
 
-Problem
+#Problem
 
     In Python 2.1, Unicode literals can only be written using the
     Latin-1 based encoding "unicode-escape". This makes the
@@ -29,7 +29,7 @@ Problem
     favorite encoding, but are bound to the "unicode-escape" encoding
     for Unicode literals.
 
-Proposed Solution
+#Proposed Solution
 
     I propose to make the Python source code encoding both visible and
     changeable on a per-source file basis by using a special comment
@@ -39,7 +39,7 @@ Proposed Solution
     concept changes are necessary with respect to the handling of
     Python source code data.
 
-Defining the Encoding
+#Defining the Encoding
 
     Python will default to ASCII as standard encoding if no other
     encoding hints are given.
@@ -78,7 +78,7 @@ Defining the Encoding
     magic encoding comment, the only allowed encoding for the comment
     is 'utf-8'.  Any other encoding will cause an error.
 
-Examples
+#Examples
 
     These are some examples to clarify the different styles for
     defining the source code encoding at the top of a Python source
@@ -147,7 +147,7 @@ Examples
           import os, sys
           ...
 
-Concepts
+#Concepts
 
     The PEP is based on the following concepts which would have to be
     implemented to enable usage of such a magic comment:
@@ -191,7 +191,7 @@ Concepts
        subset of the encoding, and thus need no further conversion
        after step 4.
 
-Implementation
+#Implementation
 
     For backwards-compatibility with existing code which currently
     uses non-ASCII in string literals without declaring an encoding,
@@ -219,26 +219,26 @@ Implementation
     SUZUKI Hisao is working on a patch; see [2] for details. A patch
     implementing only phase 1 is available at [1].
 
-Phases
+#Phases
     Implementation of steps 1 and 2 above were completed in 2.3,
     except for changing the default encoding to "ascii".
 
     The default encoding was set to "ascii" in version 2.5.
    
-Scope
+#Scope
 
     This PEP intends to provide an upgrade path from the current
     (more-or-less) undefined source code encoding situation to a more
     robust and portable definition.
 
-References
+#References
 
     [1] Phase 1 implementation:
         http://python.org/sf/526840
     [2] Phase 2 implementation:
         http://python.org/sf/534304
 
-History
+#History
 
     1.10 and above: see CVS history
     1.8: Added '.' to the coding RE.
@@ -250,7 +250,7 @@ History
          UTF-8 BOM mark detection, Emacs style magic comment,
          two phase approach to the implementation
 
-Copyright
+#Copyright
 
     This document has been placed in the public domain.
 
